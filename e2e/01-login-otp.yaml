@@ -1,0 +1,26 @@
+# Flujo F0: un cliente nuevo pide su código OTP.
+# Requiere: development build instalado + Supabase local (npx supabase start en ../Car Wash 505).
+# El código llega al buzón de pruebas local de Supabase (ver la URL de "Inbucket/Mailpit" en `supabase status`).
+# Ejecutar: maestro test e2e/01-login-otp.yaml
+appId: com.carwash505.app
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Bienvenido"
+- tapOn:
+    id: "welcome-cta"
+- assertVisible: "Tu correo"
+- tapOn:
+    id: "login-email"
+- inputText: "no-es-un-correo"
+- tapOn:
+    id: "login-submit"
+- assertVisible: "Escribe un correo válido."
+- tapOn:
+    id: "login-email"
+- eraseText: 30
+- inputText: "cliente.e2e@example.com"
+- tapOn:
+    id: "login-submit"
+- assertVisible: "Revisa tu correo"
+- assertVisible: "Escribe el código de 6 dígitos que enviamos a cliente.e2e@example.com."

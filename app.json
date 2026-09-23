@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "Car Wash 505",
+    "slug": "carwash505",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/generated/icon.png",
+    "scheme": "carwash505",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#05070a",
+    "ios": {
+      "bundleIdentifier": "com.carwash505.app",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.carwash505.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0b5ea8",
+        "foregroundImage": "./assets/brand/generated/adaptive-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/brand/generated/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#05070a",
+          "image": "./assets/brand/carwash505-logo-blanco.png",
+          "imageWidth": 200
+        }
+      ],
+      "expo-secure-store",
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "color": "#0b5ea8",
+          "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Car Wash 505 usa la cámara para registrar fotos del vehículo antes y después del servicio, y para adjuntarlas a un reporte.",
+          "photosPermission": "Car Wash 505 usa tus fotos solo si eliges adjuntar una imagen a un reporte.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Car Wash 505 usa la cámara para registrar fotos del vehículo antes y después del servicio, y para escanear el QR de la wallet del cliente.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

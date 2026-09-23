@@ -1,0 +1,38 @@
+# Flujo F1: un cliente con sesión reserva y cancela.
+# Requiere: development build + Supabase local con la migración 8, al menos UNA bahía activa y UN servicio
+# reservable (cargados desde el panel web: /admin/bays y /admin/services → "Reservas en la app").
+# El cliente ya debe tener sesión (ejecutar antes 01-login-otp.yaml y completar el código).
+# Ejecutar: maestro test e2e/02-booking.yaml
+appId: com.carwash505.app
+---
+- launchApp
+# Garage: agregar un vehículo
+- tapOn: "Perfil"
+- tapOn:
+    id: "profile-vehicles"
+- tapOn:
+    id: "vehicles-add"
+- tapOn:
+    id: "vehicle-plate"
+- inputText: "M 505-505"
+- tapOn:
+    id: "vehicle-save"
+- back
+# Reservar: primer servicio, mañana, primera hora libre
+- tapOn: "Reservar"
+- tapOn:
+    id: "book-service-.*"
+    index: 0
+- tapOn: "Mañana"
+- tapOn:
+    id: "book-slot-.*"
+    index: 0
+    enabled: true
+- tapOn:
+    id: "book-confirm"
+- assertVisible: "Reserva confirmada"
+- assertVisible: "CW505-.*"
+# Cancelar
+- tapOn: "Cancelar reserva"
+- tapOn: "Cancelar reserva"
+- assertVisible: "Reserva cancelada"
