@@ -1,11 +1,10 @@
-import { getLocales } from "expo-localization";
 import type { Locale } from "@/shared/site";
 import { en } from "./en";
 import { es, type Copy } from "./es";
 
-/** Español por defecto (como la web); inglés solo si el teléfono está en inglés. */
+/** La app se muestra siempre en español (decisión del negocio), sin importar el idioma del teléfono. */
 export function currentLocale(): Locale {
-  return getLocales()[0]?.languageCode === "en" ? "en" : "es";
+  return "es";
 }
 
 export function getCopy(locale: Locale = currentLocale()): Copy {

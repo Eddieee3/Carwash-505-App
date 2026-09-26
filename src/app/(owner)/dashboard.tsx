@@ -75,7 +75,21 @@ export default function OwnerDashboard() {
             ) : (
               <>
                 <Text variant="displayLg">{`${s.occupancy_pct}%`}</Text>
-                <Text tone="muted">{c.owner.occupancyHint(s.booked_minutes, s.capacity_minutes)}</Text>
+                <View
+                  style={{ height: 8, borderRadius: 4, backgroundColor: palette.surface, overflow: "hidden" }}
+                  accessibilityRole="progressbar"
+                  accessibilityValue={{ min: 0, max: 100, now: s.occupancy_pct }}
+                >
+                  <View style={{ height: 8, width: `${Math.min(100, s.occupancy_pct)}%`, backgroundColor: palette.cyan }} />
+                </View>
+                <Text tone="muted">
+                  {/* Promedio por bahía: así las horas coinciden con el horario del día (no la suma de todas las bahías). */}
+                  {c.owner.occupancyHint(
+                    hoursText(s.booked_minutes / Math.max(1, (bays.data ?? []).length), c.owner.hours),
+                    hoursText(s.capacity_minutes / Math.max(1, (bays.data ?? []).length), c.owner.hours),
+                    (bays.data ?? []).length,
+                  )}
+                </Text>
               </>
             )}
           </Card>
@@ -194,4 +208,10 @@ export default function OwnerDashboard() {
       <Button variant="quiet" label={c.common.signOut} onPress={signOut} />
     </Screen>
   );
+}
+
+/** Minutos → "3 h 30 min" (el dueño piensa en horas de trabajo, no en minutos). */
+function hoursText(minutes: number, fmt: (h: number, m: number) => string): string {
+  const total = Math.max(0, Math.round(minutes));
+  return fmt(Math.floor(total / 60), total % 60);
 }

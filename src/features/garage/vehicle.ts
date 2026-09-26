@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Copy } from "@/i18n";
 import type { VehicleKind, VehicleRow } from "@/shared/database";
 
-export const VEHICLE_KINDS = ["car", "suv", "other"] as const satisfies readonly VehicleKind[];
+export const VEHICLE_KINDS = ["car", "suv", "large", "other"] as const satisfies readonly VehicleKind[];
 
 // Mismos límites que la tabla `vehicles` (migración 7).
 const optionalText = (max: number) =>

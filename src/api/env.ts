@@ -5,6 +5,8 @@
 export const env = {
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "",
+  /** Inicio de sesión con código por WhatsApp. Solo "true" lo activa (requiere Twilio configurado en Supabase). */
+  whatsappLogin: process.env.EXPO_PUBLIC_WHATSAPP_LOGIN === "true",
 };
 
 export function isSupabaseConfigured(): boolean {

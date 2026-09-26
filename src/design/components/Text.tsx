@@ -1,5 +1,5 @@
-import { Text as RNText, StyleSheet, View, type TextProps } from "react-native";
-import { status, type as typeScale, type TypeVariant } from "../tokens";
+import { Platform, Text as RNText, StyleSheet, View, type TextProps } from "react-native";
+import { iosTopInset, status, type as typeScale, type TypeVariant } from "../tokens";
 import { useTheme } from "../theme";
 
 type Tone = "fg" | "muted" | "accent" | "danger";
@@ -10,7 +10,8 @@ export function Text({ variant = "body", tone = "fg", style, ...rest }: AppTextP
   const theme = useTheme();
   const color = { fg: theme.fg, muted: theme.fgMuted, accent: theme.accent, danger: status.danger }[tone];
   const role = variant.startsWith("display") ? "header" : undefined;
-  return <RNText accessibilityRole={role} style={[typeScale[variant], { color }, style]} {...rest} />;
+  const inset = Platform.OS === "ios" ? iosTopInset[variant] : undefined;
+  return <RNText accessibilityRole={role} style={[typeScale[variant], inset ? { paddingTop: inset } : null, { color }, style]} {...rest} />;
 }
 
 /** `.eyebrow` de la web: línea de 32 px + texto en mayúsculas con el color de acento. */

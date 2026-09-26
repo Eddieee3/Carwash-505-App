@@ -1,13 +1,27 @@
+import { BlurView } from "expo-blur";
 import { StyleSheet, View, type ViewProps } from "react-native";
-import { radius, space } from "../tokens";
-import { useTheme } from "../theme";
+import { glass, radius, space } from "../tokens";
 
-/** Panel con borde de 1 px y radio `panel`, como las tarjetas de la web. */
-export function Card({ style, ...rest }: ViewProps) {
-  const theme = useTheme();
-  return <View style={[styles.card, { backgroundColor: theme.bgRaised, borderColor: theme.line }, style]} {...rest} />;
+/** Panel de vidrio: desenfoca el fondo ambiental, con borde fino y brillo en el borde superior. */
+export function Card({ style, children, ...rest }: ViewProps) {
+  return (
+    <View style={[styles.card, style]} {...rest}>
+      <BlurView intensity={glass.blur} tint="dark" style={StyleSheet.absoluteFill} />
+      <View style={[StyleSheet.absoluteFill, styles.tint, { pointerEvents: "none" }]} />
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: radius.panel, padding: space.lg, gap: space.md },
+  card: {
+    borderWidth: 1,
+    borderColor: glass.border,
+    borderTopColor: glass.highlight,
+    borderRadius: radius.panel,
+    padding: space.lg,
+    gap: space.md,
+    overflow: "hidden",
+  },
+  tint: { backgroundColor: glass.bg },
 });

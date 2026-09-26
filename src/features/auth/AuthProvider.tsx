@@ -54,7 +54,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["app-role", userId],
     queryFn: () => fetchRole(userId as string),
     enabled: userId !== null,
-    staleTime: 5 * 60_000,
+    // El propietario puede cambiar el rol en cualquier momento (cliente → colaborador): se vuelve a leer
+    // al regresar a la app o a la pestaña, sin esperar ni cerrar sesión.
+    staleTime: 15_000,
+    refetchOnWindowFocus: "always",
     retry: 2,
   });
   const { refetch } = roleQuery;

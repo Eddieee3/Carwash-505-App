@@ -1,9 +1,9 @@
 import Tabs from "expo-router/js-tabs";
-import { ClipboardList, FileChartColumn, LayoutDashboard, LifeBuoy } from "lucide-react-native";
+import { ClipboardList, FileChartColumn, LayoutDashboard, LifeBuoy, Users } from "lucide-react-native";
 import { dark, fonts, palette } from "@/design";
 import { getCopy } from "@/i18n";
 
-/** Propietario: dashboard en vivo, tablero del día, reportes y soporte. Insumos y tareas: /operations. */
+/** Propietario: dashboard en vivo, tablero del día, reportes, personal y soporte. Insumos y tareas: /operations. */
 export default function OwnerLayout() {
   const c = getCopy();
   return (
@@ -14,7 +14,7 @@ export default function OwnerLayout() {
         tabBarStyle: { backgroundColor: palette.graphite, borderTopColor: dark.line },
         tabBarActiveTintColor: palette.cyan,
         tabBarInactiveTintColor: palette.steel,
-        tabBarLabelStyle: { fontFamily: fonts.display.medium, letterSpacing: 1, textTransform: "uppercase" },
+        tabBarLabelStyle: { fontFamily: fonts.display.medium, letterSpacing: 1, textTransform: "uppercase", paddingTop: 2 },
       }}
     >
       <Tabs.Screen
@@ -36,6 +36,13 @@ export default function OwnerLayout() {
         options={{
           title: c.reports.tab,
           tabBarIcon: ({ color, size }) => <FileChartColumn color={color} size={size} strokeWidth={1.75} />,
+        }}
+      />
+      <Tabs.Screen
+        name="team"
+        options={{
+          title: c.team.tab,
+          tabBarIcon: ({ color, size }) => <Users color={color} size={size} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen

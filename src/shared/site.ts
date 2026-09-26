@@ -47,15 +47,16 @@ export const BUSINESS = {
   hours: HOURS,
   /** Enlaces oficiales. `null` = no confirmado, no se muestra. */
   links: {
-    waze: null as string | null,
-    googleMaps: null as string | null,
-    instagram: null as string | null,
-    facebook: null as string | null,
+    // Búsqueda por la dirección confirmada por el negocio ("3 Carr. a Masaya, Managua"); sin coordenadas.
+    waze: "https://waze.com/ul?q=3%20Carr.%20a%20Masaya%2C%20Managua&navigate=yes" as string | null,
+    googleMaps: "https://www.google.com/maps/search/?api=1&query=3%20Carr.%20a%20Masaya%2C%20Managua" as string | null,
+    instagram: "https://www.instagram.com/carwash505.nic/" as string | null,
+    facebook: "https://www.facebook.com/carwash505" as string | null,
     /** Fichas oficiales de la app móvil (F7). `null` hasta publicarla: /t/<id> lleva al inicio. */
     appStore: null as string | null,
     playStore: null as string | null,
   },
-  /** Moneda de los precios. PENDIENTE DE CONFIRMAR; no se muestra ningún precio aún. */
+  /** Moneda por defecto del negocio; cada servicio define la suya (NIO o USD). */
   currency: "USD",
 };
 

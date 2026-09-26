@@ -5,9 +5,22 @@ import type { BookingRow, BookingStatus, ServiceRow, VehicleKind, VehicleRow } f
 
 export type BookableService = Pick<
   ServiceRow,
-  "id" | "slug" | "name_es" | "name_en" | "price_car" | "price_suv" | "currency" | "requires_evaluation" | "bay_kind"
+  | "id"
+  | "slug"
+  | "name_es"
+  | "name_en"
+  | "price_car"
+  | "price_suv"
+  | "price_large"
+  | "currency"
+  | "requires_evaluation"
+  | "bay_kind"
+  | "duration_minutes_car"
+  | "duration_minutes_suv"
+  | "duration_minutes_large"
 >;
 export type Slot = { slot_start: string; slot_end: string; free_bays: number };
+export type DayAvailability = { day: string; total: number; free: number };
 export type MyBooking = Pick<
   BookingRow,
   "id" | "reference_code" | "status" | "starts_at" | "slot" | "price_snapshot" | "service_id" | "vehicle_id" | "attendance" | "eta_at"
@@ -26,7 +39,7 @@ export function useBookableServices() {
     queryFn: async () => {
       const { data, error } = await db()
         .from("services")
-        .select("id, slug, name_es, name_en, price_car, price_suv, currency, requires_evaluation, bay_kind")
+        .select("id, slug, name_es, name_en, price_car, price_suv, price_large, currency, requires_evaluation, bay_kind, duration_minutes_car, duration_minutes_suv, duration_minutes_large")
         .eq("status", "published")
         .eq("bookable", true)
         .order("sort_order");
@@ -61,6 +74,21 @@ export function useAvailableSlots(day: string, serviceId: string | null, kind: V
     },
     refetchInterval: 20_000,
     staleTime: 10_000,
+  });
+}
+
+/** Horarios totales y libres de cada día reservable, para colorear el calendario. Se refresca solo. */
+export function useAvailableDays(serviceId: string | null, kind: VehicleKind | null) {
+  return useQuery({
+    queryKey: ["available-days", serviceId, kind],
+    enabled: serviceId !== null && kind !== null,
+    queryFn: async () => {
+      const { data, error } = await db().rpc("available_days", { p_service_id: serviceId, p_vehicle_kind: kind });
+      if (error) throw error;
+      return data as DayAvailability[];
+    },
+    refetchInterval: 60_000,
+    staleTime: 20_000,
   });
 }
 

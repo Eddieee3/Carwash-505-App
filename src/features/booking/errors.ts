@@ -53,6 +53,13 @@ export const BOOKING_ERROR_CODES = [
   "note_required",
   "invalid_task",
   "invalid_range",
+  // Escáner de la Tarjeta VIP (migración 22)
+  "scan_invalid",
+  "scan_used",
+  "scan_expired",
+  "booking_invalid",
+  "booking_not_today",
+  "no_bay_free",
 ] as const;
 export type BookingErrorCode = (typeof BOOKING_ERROR_CODES)[number];
 

@@ -8,7 +8,8 @@ import { getCopy } from "@/i18n";
 
 export default function Verify() {
   const c = getCopy();
-  const { email = "" } = useLocalSearchParams<{ email: string }>();
+  const { email = "", phone = "" } = useLocalSearchParams<{ email?: string; phone?: string }>();
+  const byPhone = phone.length > 0;
   const [code, setCode] = useState("");
   const [error, setError] = useState<string>();
   const [hint, setHint] = useState<string>();
@@ -23,7 +24,10 @@ export default function Verify() {
     if (!supabase) return;
     setBusy(true);
     setError(undefined);
-    const { error: verifyError } = await supabase.auth.verifyOtp({ email, token: parsed.data, type: "email" });
+    // Supabase verifica los códigos de teléfono (SMS o WhatsApp) con type "sms".
+    const { error: verifyError } = byPhone
+      ? await supabase.auth.verifyOtp({ phone, token: parsed.data, type: "sms" })
+      : await supabase.auth.verifyOtp({ email, token: parsed.data, type: "email" });
     setBusy(false);
     // Si es correcto, la sesión cambia y las rutas protegidas llevan a la zona del rol.
     if (verifyError) setError(c.verify.failed);
@@ -32,7 +36,9 @@ export default function Verify() {
   async function resend() {
     if (!supabase) return;
     setError(undefined);
-    const { error: otpError } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+    const { error: otpError } = byPhone
+      ? await supabase.auth.signInWithOtp({ phone, options: { channel: "whatsapp", shouldCreateUser: true } })
+      : await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     if (otpError) setError(c.login.failed);
     else setHint(c.verify.resent);
   }
@@ -40,8 +46,8 @@ export default function Verify() {
   return (
     <Screen>
       <View style={{ gap: space.xl, flex: 1, justifyContent: "flex-end" }}>
-        <Text variant="displayMd">{c.verify.title}</Text>
-        <Text tone="muted">{c.verify.body(email)}</Text>
+        <Text variant="displayMd">{byPhone ? c.verify.titleWhatsapp : c.verify.title}</Text>
+        <Text tone="muted">{byPhone ? c.verify.bodyWhatsapp(phone) : c.verify.body(email)}</Text>
         <Field
           label={c.verify.label}
           value={code}
@@ -58,7 +64,7 @@ export default function Verify() {
         />
         <Button label={c.verify.submit} onPress={submit} loading={busy} testID="verify-submit" />
         <Button variant="quiet" label={c.verify.resend} onPress={resend} />
-        <Button variant="quiet" label={c.verify.change} onPress={() => router.back()} />
+        <Button variant="quiet" label={byPhone ? c.verify.changePhone : c.verify.change} onPress={() => router.back()} />
       </View>
     </Screen>
   );

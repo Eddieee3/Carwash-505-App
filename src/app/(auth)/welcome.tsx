@@ -1,11 +1,10 @@
 import { Image } from "expo-image";
-import * as Linking from "expo-linking";
 import { router } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { Button, Eyebrow, Screen, space, Text } from "@/design";
 import { getCopy } from "@/i18n";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
+/** Bienvenida: clientes entran con su correo; el personal del local, con usuario y contraseña. */
 export default function Welcome() {
   const c = getCopy();
   return (
@@ -24,7 +23,8 @@ export default function Welcome() {
         <Text variant="displayLg">{c.welcome.title}</Text>
         <Text tone="muted">{c.welcome.body}</Text>
         <Button label={c.welcome.cta} onPress={() => router.push("/login")} testID="welcome-cta" />
-        <Button variant="quiet" label={c.common.whatsapp} onPress={() => Linking.openURL(buildWhatsAppUrl())} />
+        {/* Personal del local: usuario y contraseña que crea el dueño. */}
+        <Button variant="quiet" label={c.welcome.staff} onPress={() => router.push("/staff-login")} testID="welcome-staff" />
       </View>
     </Screen>
   );

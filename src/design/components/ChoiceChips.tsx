@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from "react-native";
-import { palette, radius, space, touch } from "../tokens";
+import { glass, palette, radius, space, touch } from "../tokens";
 import { useTheme } from "../theme";
 import { Text } from "./Text";
 
@@ -41,7 +41,7 @@ export function ChoiceChips<T extends string>({
             style={({ pressed }) => [
               styles.chip,
               layout === "column" && styles.chipColumn,
-              { borderColor: selected ? palette.cyan : theme.lineStrong, backgroundColor: selected ? palette.brand : theme.bgRaised },
+              { borderColor: selected ? palette.cyan : glass.border, backgroundColor: selected ? glass.selected : theme.bgRaised },
               pressed && !selected && { borderColor: theme.accent },
               o.disabled && styles.disabled,
             ]}

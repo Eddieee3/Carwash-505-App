@@ -15,7 +15,9 @@ import { BOARD_GROUPS, groupBoard, type BoardAction, type BoardGroup, type Board
 /** Tablero del día en vivo. Lo usan el colaborador ("Hoy") y el propietario (pestaña "Hoy"). */
 export function BoardScreen({ eyebrow, withSignOut = false }: { eyebrow: string; withSignOut?: boolean }) {
   const c = getCopy();
-  const { session, signOut } = useAuth();
+  const { session, signOut, view } = useAuth();
+  // Escanear y cobrar es de recepción (dueño y admin del lobby); los colaboradores solo ven y avanzan los carros.
+  const canScan = view === "lobby" || view === "owner";
   const userId = session?.user.id ?? null;
   useBookingsRealtime();
 
@@ -52,7 +54,7 @@ export function BoardScreen({ eyebrow, withSignOut = false }: { eyebrow: string;
         </View>
       </View>
 
-      <Button variant="ghost" label={c.scan.open} onPress={() => router.push("/scan")} testID="board-scan" />
+      {canScan ? <Button variant="ghost" label={c.scan.open} onPress={() => router.push("/scan")} testID="board-scan" /> : null}
       <Button variant="ghost" label={c.ops.open} onPress={() => router.push("/operations")} testID="board-operations" />
 
       <ChoiceChips

@@ -7,10 +7,24 @@ import type { OpeningHours } from "./site";
 
 export type ContentStatus = "draft" | "published" | "archived";
 /** `operator` = colaborador de la app móvil: existe en `profiles` pero no tiene acceso al panel web. */
-export type UserRole = "super_admin" | "editor" | "viewer" | "operator";
+export type UserRole = "super_admin" | "editor" | "viewer" | "operator" | "lobby";
 export type ProfileStatus = "active" | "disabled";
 
-export type ServiceCategory = "maintenance" | "interior" | "paint_correction" | "ceramic" | "chassis" | "other";
+/** owner_staff() (migración 23): personal del local que administra el dueño desde la app. */
+export type StaffMember = {
+  id: string;
+  username: string;
+  email: string;
+  /** true = cuenta creada con usuario y contraseña (correo interno que no recibe mensajes). */
+  internal: boolean;
+  full_name: string | null;
+  role: "operator" | "lobby";
+  status: ProfileStatus;
+  created_at: string;
+  last_sign_in_at: string | null;
+};
+
+export type ServiceCategory = "maintenance" | "interior" | "paint_correction" | "ceramic" | "chassis" | "engine" | "other";
 
 export type ProfileRow = {
   id: string;
@@ -39,6 +53,8 @@ export type ServiceRow = {
   excludes_en: string[];
   price_car: number | null;
   price_suv: number | null;
+  /** Camioneta grande. Sin valor = precio a confirmar para ese tamaño. */
+  price_large: number | null;
   /** Moneda de los precios de este servicio (USD o NIO). */
   currency: string;
   requires_evaluation: boolean;
@@ -57,7 +73,10 @@ export type ServiceRow = {
   bay_kind: BayKind | null;
   duration_minutes_car: number | null;
   duration_minutes_suv: number | null;
+  duration_minutes_large: number | null;
   bookable: boolean;
+  /** Horas de garantía por lluvia desde que el vehículo sale finalizado (Deluxe: 24). */
+  rain_warranty_hours: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -219,7 +238,7 @@ export type LeadRow = {
   name: string;
   whatsapp: string;
   email: string | null;
-  vehicle_type: "car" | "suv" | "other";
+  vehicle_type: "car" | "suv" | "large" | "other";
   vehicle_details: string | null;
   need: string;
   service_id: string | null;
@@ -280,8 +299,8 @@ export type AuditLogRow = {
 // App móvil (migraciones 7 y 8)
 // ---------------------------------------------------------------------------
 
-export type VehicleKind = "car" | "suv" | "other";
-export type BayKind = "wash" | "detail";
+export type VehicleKind = "car" | "suv" | "large" | "other";
+export type BayKind = "wash" | "interior" | "detail" | "cabin";
 
 export type CustomerRow = {
   id: string;
@@ -446,6 +465,17 @@ export type LoyaltyRewardRow = {
 export type RedemptionStatus = "issued" | "used" | "cancelled";
 
 /** Resumen que devuelve la RPC my_wallet(). */
+/** Tarjeta VIP de casillas (my_vip_card / customer_vip_card). La última casilla es el lavado gratis. */
+export type VipCardState = {
+  enabled: boolean;
+  card_slots: number;
+  card_number: number;
+  filled: number;
+  next_is_free: boolean;
+  free_washes_earned: number;
+  total_stamps: number;
+};
+
 export type Wallet = {
   loyalty_enabled: boolean;
   balance: number;
@@ -479,6 +509,24 @@ export type WalletScan = {
   membership: ActiveMembership | null;
   gift_cards: GiftCardSummary[];
   orders: PendingOrder[];
+};
+
+/** staff_scan (migración 22): QR de la app, de Apple Wallet o de Google Wallet → sesión de escaneo de 5 min. */
+export type StaffScan = WalletScan & {
+  scan_id: string;
+  source: "app" | "apple" | "google";
+  vip_card: VipCardState;
+  vehicles: { id: string; kind: VehicleKind; make: string | null; model: string | null; plate: string | null; nickname: string | null }[];
+  walk_in_services: { id: string; name_es: string; name_en: string; category: string }[];
+};
+export type StaffScanError = { error: "invalid" | "expired" | "revoked" | "inactive" };
+
+/** staff_complete_wash / staff_walk_in vía la Edge Function wallet-pass (incluye la actualización del pase). */
+export type StaffWashResult = {
+  booking_id: string;
+  customer_id: string;
+  vip_card: VipCardState;
+  wallet: { updated: number; error: string | null };
 };
 
 // Pagos en el local, membresías, gift cards y ruleta (migración 11)

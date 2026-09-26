@@ -16,6 +16,10 @@ Notifications.setNotificationHandler({
 
 let currentToken: string | null = null;
 
+// En web (vista previa) no existe la API nativa de respuestas; Platform.OS es constante, así que el hook es estable.
+const IS_WEB = Platform.OS === "web";
+const useLastResponse = IS_WEB ? () => null : Notifications.useLastNotificationResponse;
+
 async function configure() {
   const c = getCopy();
   await Notifications.setNotificationCategoryAsync(REMINDER_CATEGORY, [
@@ -59,7 +63,7 @@ export async function unregisterPushToken() {
 /** Registra el dispositivo y atiende los botones "Asistiré / Llegaré tarde / Cancelar" del recordatorio. */
 export function usePushNotifications(enabled: boolean) {
   const qc = useQueryClient();
-  const last = Notifications.useLastNotificationResponse();
+  const last = useLastResponse();
   const handled = useRef<string | null>(null);
 
   const handle = useCallback(
@@ -80,14 +84,14 @@ export function usePushNotifications(enabled: boolean) {
   );
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || IS_WEB) return;
     configure()
       .then(registerPushToken)
       .catch(() => undefined); // sin push la app sigue funcionando (el cliente ve todo en la app)
   }, [enabled]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || IS_WEB) return;
     const sub = Notifications.addNotificationResponseReceivedListener((r) => void handle(r));
     return () => sub.remove();
   }, [enabled, handle]);

@@ -5,11 +5,11 @@ const TAG: Record<Locale, string> = { es: "es-NI", en: "en-US" };
 
 /** Mismo criterio que la web y que book_slot(): sin precio centralizado para ese vehículo, no hay monto. */
 export function priceForVehicle(
-  service: Pick<ServiceRow, "price_car" | "price_suv" | "requires_evaluation">,
+  service: Pick<ServiceRow, "price_car" | "price_suv" | "price_large" | "requires_evaluation">,
   kind: VehicleKind,
 ): number | null {
   if (service.requires_evaluation || kind === "other") return null;
-  const amount = kind === "suv" ? service.price_suv : service.price_car;
+  const amount = kind === "large" ? service.price_large : kind === "suv" ? service.price_suv : service.price_car;
   return amount === null || !Number.isFinite(amount) || amount < 0 ? null : amount;
 }
 

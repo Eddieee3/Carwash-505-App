@@ -1,22 +1,22 @@
 import { Award, Crown, Gift } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Alert, Share, StyleSheet, View } from "react-native";
-import QRCode from "react-native-qrcode-svg";
-import { Button, Card, EmptyState, Eyebrow, Field, light, palette, Screen, space, StatusBadge, Text } from "@/design";
+import { Button, Card, EmptyState, Field, palette, space, StatusBadge, Text } from "@/design";
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { CommerceSection } from "@/features/commerce/CommerceSection";
 import { ChallengesCard } from "@/features/pricing/ChallengesCard";
-import { useApplyReferral, useCancelRedemption, useRedeem, useRewards, useWallet, useWalletToken } from "@/features/loyalty/api";
-import { walletQrPayload } from "@/features/loyalty/qr";
+import { useApplyReferral, useCancelRedemption, useRedeem, useRewards, useWallet } from "./api";
 import { currentLocale, getCopy } from "@/i18n";
 import { formatDateLong } from "@/lib/time";
 
-/** Wallet del cliente: QR rotativo, VIP, puntos, canjes, logros y referidos. */
-export default function WalletScreen() {
+/**
+ * Perfil del cliente: puntos, canjes, retos, membresías y gift cards, logros y referidos
+ * (antes era la pestaña Wallet; el QR y las casillas ahora viven en el pase de Apple/Google Wallet).
+ */
+export function LoyaltySection() {
   const c = getCopy();
   const locale = currentLocale();
   const wallet = useWallet();
-  const token = useWalletToken(wallet.isSuccess);
   const w = wallet.data;
   const rewards = useRewards(!!w?.loyalty_enabled);
   const redeem = useRedeem();
@@ -26,39 +26,14 @@ export default function WalletScreen() {
   const fail = (e: unknown) => Alert.alert(bookingErrorMessage(e, c));
   const name = (x: { name_es: string; name_en: string }) => (locale === "en" ? x.name_en : x.name_es);
 
-  if (wallet.isLoading) {
-    return (
-      <Screen edges={["top"]}>
-        <ActivityIndicator color={palette.cyan} />
-      </Screen>
-    );
-  }
-  if (!w) {
-    return (
-      <Screen edges={["top"]}>
-        <EmptyState title={c.errors.generic} action={{ label: c.common.retry, onPress: () => wallet.refetch() }} />
-      </Screen>
-    );
-  }
+  if (wallet.isLoading) return <ActivityIndicator color={palette.cyan} />;
+  if (!w) return <EmptyState title={c.errors.generic} action={{ label: c.common.retry, onPress: () => wallet.refetch() }} />;
 
   return (
-    <Screen edges={["top"]}>
-      <View style={{ gap: space.sm }}>
-        <Eyebrow>{c.wallet.eyebrow}</Eyebrow>
-        <Text variant="displayLg">{c.wallet.title}</Text>
-      </View>
-
-      {/* QR sobre fondo claro: se lee mejor con cualquier cámara. */}
-      <Card style={[styles.qrCard, { backgroundColor: light.bg }]}>
-        {token.data ? (
-          <QRCode value={walletQrPayload(token.data.token)} size={200} color={palette.ink} backgroundColor={light.bg} />
-        ) : (
-          <ActivityIndicator color={palette.brand} />
-        )}
-        <Text variant="bodySm" style={{ color: light.fgMuted, textAlign: "center" }}>
-          {c.wallet.qrHint}
-        </Text>
-      </Card>
+    <View style={{ gap: space.lg }}>
+      <Text variant="displaySm" accessibilityRole="header">
+        {c.client.loyaltyTitle}
+      </Text>
 
       {w.vip_since ? (
         <Card>
@@ -185,12 +160,11 @@ export default function WalletScreen() {
           </>
         ) : null}
       </Card>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  qrCard: { alignItems: "center", gap: space.md, paddingVertical: space.xl },
   row: { flexDirection: "row", justifyContent: "space-between" },
   track: { height: 8, borderRadius: 4, backgroundColor: palette.surface, overflow: "hidden" },
   bar: { height: 8, backgroundColor: palette.signal },

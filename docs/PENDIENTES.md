@@ -6,18 +6,20 @@
 
 ---
 
-## 0. Primero: el backend (API)
+## 0. Backend (Supabase)
 
-**Hoy no hay backend en producción.** Todo lo que la app lee y escribe pasa por Supabase (base de datos, Auth, Storage y Edge Functions). Hasta crearlo:
-- La app solo muestra la pantalla de configuración pendiente.
-- La web funciona con sus datos locales confirmados; el panel queda en "Configuración pendiente".
+**Proyecto creado:** "CarWash 505" (`odlfjbazrmtiurawyifu`, us-east-2, Postgres 17), enlazado con `supabase link` en la carpeta de la web.
+- **2026-09-24:** migraciones 1–14 y seed aplicados y verificados (14/14; lectura pública y RLS comprobadas).
+- `.env` de la app y `.env.local` de la web escritos con URL y claves. Ambos están ignorados por Git; la `service_role` solo va en la web.
 
-Pasos (detalle en §3):
-1. Crear el proyecto Supabase.
-2. Aplicar las migraciones 7–14.
-3. Configurar Auth.
-4. Desplegar las Edge Functions.
-5. Poner las claves en `.env` de web y app.
+Falta:
+1. **Auth: plantilla del correo con el código de 6 dígitos.** Sin esto, el correo trae un enlace y la pantalla de la app que pide el código no funciona. Hay dos formas:
+   - `npx supabase config push` desde la web (aplica `supabase/config.toml` y `templates/otp.html`);
+   - o en el panel de Supabase → Authentication → Emails → *Magic Link* y *Confirm signup*: incluir `{{ .Token }}`.
+2. **SMTP propio.** El correo por defecto de Supabase envía muy pocos mensajes por hora: sirve solo para pruebas.
+3. **Primer propietario (`super_admin`):** invitarlo desde Supabase y luego insertarlo en `profiles` (ver `docs/deployment.md` de la web).
+4. Extensiones `pg_cron` y `pg_net`, y desplegar las Edge Functions (`send-push`, `owner-report`, `weather-sync`): §3.
+5. Cargar en el panel al menos una bahía y un servicio reservable (§1 #1–#3).
 
 Quedó **preparado y esperando el backend**:
 - `supabase/drafts/20260924000015_nfc_tips.sql` (F7): resolución de tags NFC (check-in, perfil, Instagram, tarjeta VIP) y tips de cuidado. No se aplica todavía.
@@ -68,11 +70,11 @@ Mientras falten, la función queda **apagada u oculta**. Nunca se inventa un val
 | Editar `eslint.config.js` de la app (una línea: el resolvedor TypeScript) | ESLint no entiende el alias `@/`; el hook `config-protection` bloquea el cambio | `npm run lint` marca todos los `import` con `@/` (falsos positivos). TypeScript y Metro sí funcionan |
 | Renombrar la carpeta `Car Wash 505 (2)` sin paréntesis | Los paréntesis rompen cómo jest-expo encuentra los mocks nativos | Cada módulo nativo nuevo que se pruebe puede necesitar un sustituto en `jest/` |
 | Corregir las **13 pruebas viejas de la web** | Ya fallaban antes de la app: seed (5 servicios), `currency` en el panel, horario 17:00 → 18:00, FAQ | La suite web nunca queda en verde |
-| Hacer **commits** | No se ha hecho ninguno (web ni app) | Todo el trabajo existe solo en disco |
+| Seguir subiendo cambios a GitHub | Primer commit subido el 2026-09-24 a dos repos **privados**: `Eddieee3/Carwash-505` (web) y `Eddieee3/Carwash-505-App` (app), con el correo privado de GitHub | Los cambios nuevos quedan solo en disco hasta el siguiente push |
 
 ## 3. Despliegue (nada se ha aplicado en un entorno real)
 
-1. Aplicar las migraciones **7 a 14** en el Supabase real (`supabase db push`), después de un backup.
+1. ~~Aplicar las migraciones~~ **Hecho** el 2026-09-24 (1–14 + seed en "CarWash 505"). Las nuevas se aplican con `supabase db push`.
 2. Auth: registro habilitado, plantillas *Magic Link* y *Confirm signup* con `{{ .Token }}`, SMTP propio (`docs/deployment.md` de la web).
 3. Primer `super_admin` con el nuevo procedimiento (invitar → insertar en `profiles`).
 4. Extensiones **pg_cron** y **pg_net**; programar `booking-automation` y `send-push` (`docs/deployment.md`).

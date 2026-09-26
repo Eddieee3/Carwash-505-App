@@ -7,6 +7,7 @@ export const HOME: Record<Exclude<AppView, "loading">, Href> = {
   auth: "/welcome",
   customer: "/home",
   operator: "/today",
+  lobby: "/today",
   owner: "/dashboard",
   blocked: "/no-access",
 };

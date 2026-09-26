@@ -1,17 +1,19 @@
 import { formatPrice, parseAmount, priceForVehicle } from "../price";
 
-const service = { price_car: 110, price_suv: 140, requires_evaluation: false };
+const service = { price_car: 580, price_suv: 660, price_large: 760, requires_evaluation: false };
 
 describe("precio por vehículo (mismo criterio que la web y book_slot)", () => {
-  it("usa el precio de sedán o de camioneta según el vehículo", () => {
-    expect(priceForVehicle(service, "car")).toBe(110);
-    expect(priceForVehicle(service, "suv")).toBe(140);
+  it("usa el precio de sedán, camioneta o camioneta grande según el vehículo", () => {
+    expect(priceForVehicle(service, "car")).toBe(580);
+    expect(priceForVehicle(service, "suv")).toBe(660);
+    expect(priceForVehicle(service, "large")).toBe(760);
   });
 
   it("no inventa precio: evaluación, tipo 'otro' o precio vacío → sin monto", () => {
     expect(priceForVehicle({ ...service, requires_evaluation: true }, "car")).toBeNull();
     expect(priceForVehicle(service, "other")).toBeNull();
     expect(priceForVehicle({ ...service, price_suv: null }, "suv")).toBeNull();
+    expect(priceForVehicle({ ...service, price_large: null }, "large")).toBeNull();
   });
 
   it("formatea el monto en su moneda", () => {

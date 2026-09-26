@@ -32,8 +32,10 @@ export function useBookingsRealtime() {
       qc.invalidateQueries({ queryKey: ["owner-dashboard"] });
       qc.invalidateQueries({ queryKey: ["closures"] });
     };
+    // Nombre único por montaje: supabase-js reutiliza un canal con el mismo nombre si el anterior aún no terminó de
+    // cerrarse (volver a la pestaña, varias pantallas a la vez) y agregarle eventos tras subscribe() falla.
     const channel = client
-      .channel("bookings-live")
+      .channel(`bookings-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "bay_closures" }, refresh)
       .subscribe();

@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, type PressableProps } from "react-native";
-import { palette, radius, space, touch } from "../tokens";
+import { glass, palette, radius, space, touch } from "../tokens";
 import { useTheme } from "../theme";
 import { Text } from "./Text";
 
@@ -29,7 +29,7 @@ export function Button({ label, variant = "primary", loading = false, disabled, 
           backgroundColor: pressed ? palette.brandHover : palette.brand,
           borderColor: "rgba(66,200,245,0.45)",
         },
-        variant === "ghost" && { borderColor: pressed ? theme.accent : theme.lineStrong },
+        variant === "ghost" && { borderColor: pressed ? theme.accent : glass.border, backgroundColor: glass.bg },
         variant === "quiet" && styles.quiet,
         isDisabled && styles.disabled,
       ]}

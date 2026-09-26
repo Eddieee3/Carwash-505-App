@@ -8,6 +8,9 @@ describe("resolveAppRole: el rol sale de profiles/customers, nunca del token", (
   it.each<[string, Parameters<typeof resolveAppRole>, AppRole]>([
     ["super_admin → propietario", [{ role: "super_admin", status: active }, null], "owner"],
     ["operator → colaborador", [{ role: "operator", status: active }, null], "operator"],
+    ["lobby → admin del lobby", [{ role: "lobby", status: active }, null], "lobby"],
+    ["lobby que antes fue cliente → admin del lobby", [{ role: "lobby", status: active }, { status: active }], "lobby"],
+    ["lobby desactivado sin ficha → deshabilitado", [{ role: "lobby", status: disabled }, null], "disabled"],
     ["cliente activo", [null, { status: active }], "customer"],
     ["cliente deshabilitado", [null, { status: disabled }], "disabled"],
     ["editor sin ficha de cliente → solo panel", [{ role: "editor", status: active }, null], "panel_only"],
@@ -37,6 +40,7 @@ describe("resolveView: qué zona de la app se muestra", () => {
   it("cada rol va a su zona; el resto queda bloqueado", () => {
     expect(resolveView({ ...base, role: "customer" })).toBe("customer");
     expect(resolveView({ ...base, role: "operator" })).toBe("operator");
+    expect(resolveView({ ...base, role: "lobby" })).toBe("lobby");
     expect(resolveView({ ...base, role: "owner" })).toBe("owner");
     for (const role of ["panel_only", "disabled", "unknown"] as const) {
       expect(resolveView({ ...base, role })).toBe("blocked");
@@ -46,6 +50,6 @@ describe("resolveView: qué zona de la app se muestra", () => {
     expect(resolveView({ ...base, role: null, roleError: true })).toBe("blocked");
   });
   it("toda vista navegable tiene pantalla de inicio", () => {
-    expect(Object.keys(HOME).sort()).toEqual(["auth", "blocked", "customer", "operator", "owner", "setup"]);
+    expect(Object.keys(HOME).sort()).toEqual(["auth", "blocked", "customer", "lobby", "operator", "owner", "setup"]);
   });
 });

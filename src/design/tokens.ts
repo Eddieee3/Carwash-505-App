@@ -34,11 +34,12 @@ export const status = {
 /** Tema oscuro por defecto (igual que la web). */
 export const dark = {
   bg: palette.ink,
-  bgRaised: palette.surface,
+  // Vidrio: las superficies dejan ver el fondo ambiental (ver Glass y Backdrop).
+  bgRaised: "rgba(255,255,255,0.05)",
   fg: palette.ice,
   fgMuted: palette.steel,
-  line: "rgba(255,255,255,0.12)",
-  lineStrong: "rgba(255,255,255,0.24)",
+  line: "rgba(255,255,255,0.10)",
+  lineStrong: "rgba(255,255,255,0.22)",
   accent: palette.cyan,
   focus: palette.cyan,
   glassBg: "rgba(10,16,23,0.68)",
@@ -92,8 +93,24 @@ export const type = {
 
 export type TypeVariant = keyof typeof type;
 
+/**
+ * Saira Condensed dibuja las mayúsculas y las tildes más arriba de lo que declara la fuente: iOS corta esa parte.
+ * En iPhone se agrega este espacio arriba de cada título (mismo tamaño de letra; solo más aire encima).
+ */
+export const iosTopInset: Partial<Record<TypeVariant, number>> = { displayLg: 8, displayMd: 6, displaySm: 5, eyebrow: 2, button: 2, number: 2 };
+
 /** Radios: 0.75rem / 1.25rem / 0.25rem de la web (1rem = 16). */
-export const radius = { control: 12, panel: 20, edit: 4, pill: 999 } as const;
+export const radius = { control: 14, panel: 22, edit: 4, pill: 999 } as const;
+
+/** Glassmorphism minimalista: superficies translúcidas con desenfoque, borde fino y brillo superior. */
+export const glass = {
+  bg: "rgba(255,255,255,0.05)",
+  bgStrong: "rgba(12,18,26,0.72)",
+  border: "rgba(255,255,255,0.10)",
+  highlight: "rgba(255,255,255,0.18)",
+  selected: "rgba(11,94,168,0.34)",
+  blur: 28,
+} as const;
 
 /** Espaciado en múltiplos de 4. `gutter` = 16 como en la web móvil. */
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 } as const;
