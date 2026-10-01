@@ -8,10 +8,23 @@ import { bookingMediaPath, EVIDENCE_BUCKET } from "./paths";
 
 export type PhotoSource = "camera" | "library";
 const MAX_SIDE = 1600;
+/** Límites del archivo elegido (antes de re-codificar). */
+export const PHOTO_LIMITS = { minWidth: 320, minHeight: 240, maxBytes: 25 * 1024 * 1024 } as const;
+
+/** Rechaza lo que no es una imagen útil: tipo no admitido, archivo enorme o dimensiones demasiado pequeñas. */
+export function checkPickedImage(asset: { width: number; height: number; mimeType?: string | null; fileSize?: number | null }) {
+  if (asset.mimeType && !/^image\/(jpeg|png|webp|heic|heif)$/i.test(asset.mimeType)) return "photo_type";
+  if (asset.fileSize && asset.fileSize > PHOTO_LIMITS.maxBytes) return "photo_too_large";
+  if (Math.max(asset.width, asset.height) < PHOTO_LIMITS.minWidth || Math.min(asset.width, asset.height) < PHOTO_LIMITS.minHeight) {
+    return "photo_too_small";
+  }
+  return null;
+}
 
 /**
- * Toma o elige una foto y la re-codifica a JPEG (máx. 1600 px, calidad 0,8).
- * Al re-codificar se descartan los metadatos EXIF, incluida la ubicación. null = la persona canceló.
+ * Toma o elige una foto, verifica tipo, tamaño y dimensiones, y la re-codifica a JPEG (máx. 1600 px, calidad 0,8).
+ * Re-codificarla comprueba que el contenido sea una imagen real y descarta los metadatos EXIF, incluida la ubicación.
+ * null = la persona canceló. Lanza "permission_denied", "photo_type", "photo_too_large" o "photo_too_small".
  */
 export async function capturePhoto(source: PhotoSource): Promise<string | null> {
   const permission =
@@ -21,6 +34,8 @@ export async function capturePhoto(source: PhotoSource): Promise<string | null> 
   const result = source === "camera" ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
   const asset = result.canceled ? null : result.assets[0];
   if (!asset) return null;
+  const problem = checkPickedImage(asset);
+  if (problem) throw new Error(problem);
 
   const context = ImageManipulator.manipulate(asset.uri);
   if (asset.width > MAX_SIDE || asset.height > MAX_SIDE) {
@@ -50,12 +65,25 @@ export async function signedUrls(paths: string[]): Promise<Record<string, string
 export function useUploadBookingPhoto() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ bookingId, phase, source }: { bookingId: string; phase: MediaPhase; source: PhotoSource }) => {
+    mutationFn: async ({
+      bookingId,
+      phase,
+      source,
+      note,
+    }: {
+      bookingId: string;
+      phase: MediaPhase;
+      source: PhotoSource;
+      /** O05: descripción del daño (opcional). */
+      note?: string;
+    }) => {
       const uri = await capturePhoto(source);
       if (!uri) return false;
       const path = bookingMediaPath(bookingId, phase, Crypto.randomUUID());
       await uploadEvidence(path, uri);
-      const { error } = await db().from("booking_media").insert({ booking_id: bookingId, phase, storage_path: path });
+      const { error } = await db()
+        .from("booking_media")
+        .insert({ booking_id: bookingId, phase, storage_path: path, note: note?.trim() ? note.trim().slice(0, 300) : null });
       if (error) {
         await db().storage.from(EVIDENCE_BUCKET).remove([path]); // no dejar archivos huérfanos
         throw error;

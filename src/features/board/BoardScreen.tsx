@@ -8,9 +8,11 @@ import { bookingErrorMessage } from "@/features/booking/errors";
 import { useUploadBookingPhoto } from "@/features/evidence/api";
 import { getCopy } from "@/i18n";
 import { localDate } from "@/lib/time";
-import { useBays, useBoardAction, useBookingsRealtime, useStaffBoard } from "./api";
+import type { MediaPhase } from "@/shared/database";
+import { useAssignableStaff, useBays, useBoardAction, useBookingsRealtime, useStaffBoard } from "./api";
 import { BoardCard } from "./BoardCard";
 import { BOARD_GROUPS, groupBoard, type BoardAction, type BoardGroup, type BoardRow } from "./model";
+import { PaymentSheet, PromptSheet } from "./sheets";
 
 /** Tablero del día en vivo. Lo usan el colaborador ("Hoy") y el propietario (pestaña "Hoy"). */
 export function BoardScreen({ eyebrow, withSignOut = false }: { eyebrow: string; withSignOut?: boolean }) {
@@ -25,15 +27,31 @@ export function BoardScreen({ eyebrow, withSignOut = false }: { eyebrow: string;
   const bays = useBays();
   const action = useBoardAction();
   const photo = useUploadBookingPhoto();
+  const staff = useAssignableStaff(canScan);
   const [group, setGroup] = useState<BoardGroup>("incoming");
+  // Hojas: motivo de cancelación (O04), nota de daño (O05) y cobro (E01).
+  const [cancelRow, setCancelRow] = useState<BoardRow | null>(null);
+  const [damageRow, setDamageRow] = useState<BoardRow | null>(null);
+  const [payRow, setPayRow] = useState<BoardRow | null>(null);
   const grouped = groupBoard(board.data ?? []);
 
   const fail = (error: unknown) => Alert.alert(bookingErrorMessage(error, c));
 
+  function takePhoto(r: BoardRow, phase: MediaPhase, note?: string) {
+    photo.mutate(
+      { bookingId: r.id, phase, source: "camera", note },
+      {
+        onError: (e) => Alert.alert(e instanceof Error && e.message === "permission_denied" ? c.photos.permission : bookingErrorMessage(e, c)),
+      },
+    );
+  }
+
   function run(row: BoardRow, a: BoardAction) {
     const exec = () => action.mutate({ id: row.id, action: a }, { onError: fail });
-    if (a === "noShow" || a === "cancel") {
-      Alert.alert(a === "noShow" ? c.staff.noShowTitle : c.staff.cancelTitle, row.customer_name ?? undefined, [
+    if (a === "cancel") {
+      setCancelRow(row);
+    } else if (a === "noShow") {
+      Alert.alert(c.staff.noShowTitle, row.customer_name ?? undefined, [
         { text: c.common.no, style: "cancel" },
         { text: c.common.yes, style: "destructive", onPress: exec },
       ]);
@@ -84,20 +102,49 @@ export function BoardScreen({ eyebrow, withSignOut = false }: { eyebrow: string;
               bays={bays.data ?? []}
               busy={action.isPending || photo.isPending}
               onAction={run}
-              onPhoto={(r, phase) =>
-                photo.mutate(
-                  { bookingId: r.id, phase, source: "camera" },
-                  {
-                    onError: (e) =>
-                      Alert.alert(e instanceof Error && e.message === "permission_denied" ? c.photos.permission : bookingErrorMessage(e, c)),
-                  },
-                )
-              }
+              onPhoto={(r, phase) => (phase === "damage" ? setDamageRow(r) : takePhoto(r, phase))}
               onMoveBay={(r, bayId) => action.mutate({ id: r.id, action: "moveBay", bayId }, { onError: fail })}
+              frontDesk={canScan}
+              staff={staff.data ?? []}
+              onAssignTo={(r, staffId) => action.mutate({ id: r.id, action: "assignTo", staffId }, { onError: fail })}
+              onPay={setPayRow}
             />
           ))}
         </View>
       )}
+
+      <PromptSheet
+        visible={!!cancelRow}
+        title={c.staff.cancelTitle}
+        body={cancelRow ? [cancelRow.customer_name, cancelRow.reference_code].filter(Boolean).join(" · ") : undefined}
+        label={c.staff.cancelReason}
+        confirmLabel={c.staff.actions.cancel}
+        minLength={3}
+        destructive
+        busy={action.isPending}
+        onCancel={() => setCancelRow(null)}
+        onConfirm={(reason) => {
+          if (!cancelRow) return;
+          action.mutate({ id: cancelRow.id, action: "cancel", reason }, { onSuccess: () => setCancelRow(null), onError: fail });
+        }}
+      />
+      <PromptSheet
+        visible={!!damageRow}
+        title={c.photos.take.damage}
+        body={c.staff.damageHint}
+        label={c.staff.damageNote}
+        confirmLabel={c.staff.damageTakePhoto}
+        onCancel={() => setDamageRow(null)}
+        onConfirm={(note) => {
+          if (damageRow) takePhoto(damageRow, "damage", note);
+          setDamageRow(null);
+        }}
+      />
+      <PaymentSheet
+        bookingId={payRow?.id ?? null}
+        title={payRow ? `${c.payments.title} · ${payRow.reference_code}` : c.payments.title}
+        onClose={() => setPayRow(null)}
+      />
 
       {withSignOut ? <Button variant="quiet" label={c.common.signOut} onPress={signOut} /> : null}
     </Screen>

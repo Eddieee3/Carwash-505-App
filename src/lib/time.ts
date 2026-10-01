@@ -75,6 +75,11 @@ export function formatDateLong(iso: string | Date, locale: Locale, tz = BUSINESS
   return new Intl.DateTimeFormat(TAG[locale], { timeZone: tz, weekday: "long", day: "numeric", month: "long" }).format(new Date(iso));
 }
 
+/** U03: solo la primera letra en mayúscula ("Octubre de 2026", "Miércoles, 1 de octubre"), no cada palabra. */
+export function sentenceCase(s: string): string {
+  return s.charAt(0).toLocaleUpperCase() + s.slice(1);
+}
+
 /** Etiqueta corta de un día: "Hoy", "Mañana" o "lun 23". */
 export function dayLabel(ymd: string, today: string, locale: Locale, words: { today: string; tomorrow: string }): string {
   if (ymd === today) return words.today;

@@ -34,6 +34,9 @@ export function photoPhases(status: BookingStatus): MediaPhase[] {
       return ["before", "damage"];
     case "in_progress":
       return ["before", "after", "damage"];
+    case "quality_check":
+      return ["after", "damage"];
+    case "ready":
     case "completed":
       return ["after"];
     default:
@@ -43,7 +46,7 @@ export function photoPhases(status: BookingStatus): MediaPhase[] {
 
 export const BOARD_GROUPS = {
   incoming: ["confirmed", "checked_in"],
-  active: ["in_progress"],
+  active: ["in_progress", "quality_check", "ready"],
   done: ["completed"],
   closed: ["cancelled", "no_show"],
 } as const satisfies Record<string, readonly BookingStatus[]>;
@@ -60,7 +63,18 @@ export function groupBoard(rows: BoardRow[]): Record<BoardGroup, BoardRow[]> {
   return out;
 }
 
-export type BoardAction = "checkIn" | "start" | "finish" | "noShow" | "cancel" | "assignMe";
+export type BoardAction = "checkIn" | "start" | "toQuality" | "backToProcess" | "markReady" | "deliver" | "noShow" | "cancel" | "assignMe";
+
+/** Estado al que lleva cada acción de avance (O03: Llegó → En proceso → Control de calidad → Lista → Entregada). */
+export const ACTION_TO_STATUS: Partial<Record<BoardAction, BookingStatus>> = {
+  checkIn: "checked_in",
+  start: "in_progress",
+  toQuality: "quality_check",
+  backToProcess: "in_progress",
+  markReady: "ready",
+  deliver: "completed",
+  noShow: "no_show",
+};
 
 /** Acciones válidas para una reserva (espejo de advance_booking/cancel_booking; la BD decide al final). */
 export function nextActions(row: BoardRow, userId: string | null, now: Date = new Date()): BoardAction[] {
@@ -76,12 +90,63 @@ export function nextActions(row: BoardRow, userId: string | null, now: Date = ne
       actions.push("start", "cancel");
       break;
     case "in_progress":
-      actions.push("finish");
+      actions.push("toQuality");
+      break;
+    case "quality_check":
+      actions.push("markReady", "backToProcess");
+      break;
+    case "ready":
+      actions.push("deliver");
       break;
     default:
       break;
   }
-  const active = row.status === "confirmed" || row.status === "checked_in" || row.status === "in_progress";
+  const active = (["confirmed", "checked_in", "in_progress", "quality_check", "ready"] as BookingStatus[]).includes(row.status);
   if (active && userId !== null && row.assigned_staff_id !== userId) actions.push("assignMe");
   return actions;
+}
+
+const WORKING: BookingStatus[] = ["in_progress", "quality_check", "ready"];
+const OCCUPYING: BookingStatus[] = ["confirmed", "checked_in", "in_progress", "quality_check", "ready"];
+
+export type TodayOverview = {
+  /** Citas del día que siguen en pie (sin canceladas ni no-show). */
+  bookings: number;
+  /** Vehículos en proceso, en control de calidad o listos para entregar. */
+  working: number;
+  /** Bahías libres en este momento, por tipo (solo los tipos con bahías activas). */
+  freeBays: { kind: BayKind; free: number; total: number }[];
+  /** Próxima llegada (confirmada, aún no empieza). */
+  next: BoardRow | null;
+  /** Reservas activas sin responsable asignado. */
+  unassigned: number;
+  delivered: number;
+};
+
+/** A01: lo primero que necesita el dueño para operar hoy, calculado del tablero en vivo y de las bahías activas. */
+export function todayOverview(rows: BoardRow[], bays: { id: string; kind: BayKind }[], now: Date = new Date()): TodayOverview {
+  const t = now.getTime();
+  const busyNow = new Set(
+    rows
+      .filter((r) => OCCUPYING.includes(r.status) && new Date(r.slot_start).getTime() <= t && new Date(r.slot_end).getTime() > t)
+      .map((r) => r.bay_id),
+  );
+  const kinds: BayKind[] = ["wash", "interior", "detail", "cabin"];
+  const freeBays = kinds
+    .map((kind) => {
+      const ofKind = bays.filter((b) => b.kind === kind);
+      return { kind, total: ofKind.length, free: ofKind.filter((b) => !busyNow.has(b.id)).length };
+    })
+    .filter((k) => k.total > 0);
+  const upcoming = rows
+    .filter((r) => r.status === "confirmed" && new Date(r.slot_start).getTime() >= t)
+    .sort((a, b) => new Date(a.slot_start).getTime() - new Date(b.slot_start).getTime());
+  return {
+    bookings: rows.filter((r) => r.status !== "cancelled" && r.status !== "no_show").length,
+    working: rows.filter((r) => WORKING.includes(r.status)).length,
+    freeBays,
+    next: upcoming[0] ?? null,
+    unassigned: rows.filter((r) => OCCUPYING.includes(r.status) && !r.assigned_staff_id).length,
+    delivered: rows.filter((r) => r.status === "completed").length,
+  };
 }

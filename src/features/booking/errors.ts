@@ -60,6 +60,22 @@ export const BOOKING_ERROR_CODES = [
   "booking_invalid",
   "booking_not_today",
   "no_bay_free",
+  // Vehículos y fotos (migración 25)
+  "vehicles_plate_format",
+  "vehicles_plate_unique",
+  "year_invalid",
+  "vehicle_has_active_bookings",
+  "permission_denied",
+  "photo_type",
+  "photo_too_large",
+  "photo_too_small",
+  // Operación y cobros (migración 26)
+  "reason_required",
+  "staff_invalid",
+  "invalid_closure",
+  "price_pending",
+  "overpayment",
+  "invalid_method",
 ] as const;
 export type BookingErrorCode = (typeof BOOKING_ERROR_CODES)[number];
 

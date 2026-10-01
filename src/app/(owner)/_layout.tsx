@@ -1,9 +1,12 @@
 import Tabs from "expo-router/js-tabs";
-import { ClipboardList, FileChartColumn, LayoutDashboard, LifeBuoy, Users } from "lucide-react-native";
+import { ClipboardList, Ellipsis, LayoutDashboard, Package, Users } from "lucide-react-native";
 import { dark, fonts, palette } from "@/design";
 import { getCopy } from "@/i18n";
 
-/** Propietario: dashboard en vivo, tablero del día, reportes, personal y soporte. Insumos y tareas: /operations. */
+/**
+ * Propietario (A03): Dashboard · Operación (reservas, bahías y QR) · Inventario · Equipo (cuentas y tareas) ·
+ * Más (reportes, soporte, cierres y seguridad). Reportes y Soporte son pantallas de "Más" (sin pestaña propia).
+ */
 export default function OwnerLayout() {
   const c = getCopy();
   return (
@@ -32,10 +35,10 @@ export default function OwnerLayout() {
         }}
       />
       <Tabs.Screen
-        name="reports"
+        name="inventory"
         options={{
-          title: c.reports.tab,
-          tabBarIcon: ({ color, size }) => <FileChartColumn color={color} size={size} strokeWidth={1.75} />,
+          title: c.owner.tabs.inventory,
+          tabBarIcon: ({ color, size }) => <Package color={color} size={size} strokeWidth={1.75} />,
         }}
       />
       <Tabs.Screen
@@ -46,12 +49,14 @@ export default function OwnerLayout() {
         }}
       />
       <Tabs.Screen
-        name="support"
+        name="more"
         options={{
-          title: c.owner.tabs.support,
-          tabBarIcon: ({ color, size }) => <LifeBuoy color={color} size={size} strokeWidth={1.75} />,
+          title: c.owner.tabs.more,
+          tabBarIcon: ({ color, size }) => <Ellipsis color={color} size={size} strokeWidth={1.75} />,
         }}
       />
+      <Tabs.Screen name="reports" options={{ href: null, title: c.reports.title }} />
+      <Tabs.Screen name="support" options={{ href: null, title: c.owner.supportTitle }} />
     </Tabs>
   );
 }

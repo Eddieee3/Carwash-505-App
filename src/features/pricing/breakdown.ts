@@ -24,7 +24,8 @@ export function breakdown(s: PriceSnapshot, locale: Locale, c: Copy): Breakdown 
   lines.push({
     key: "base",
     label: locale === "en" ? s.service_name_en : s.service_name_es,
-    value: s.requires_evaluation ? c.pricing.evaluation : (money(s.base ?? s.amount) ?? c.pricing.evaluation),
+    // `base` es el precio del principal (null = requiere evaluación); reservas anteriores a la F5 no lo traen.
+    value: (s.base !== undefined ? money(s.base) : s.requires_evaluation ? null : money(s.amount)) ?? c.pricing.evaluation,
     tone: "neutral",
   });
   for (const a of s.adjustments ?? []) {
@@ -37,11 +38,19 @@ export function breakdown(s: PriceSnapshot, locale: Locale, c: Copy): Breakdown 
   if (s.membership) {
     lines.push({ key: "membership", label: c.pricing.membership(name(s.membership)), value: formatPct(-s.membership.pct), tone: "discount" });
   }
+  for (const x of s.services ?? []) {
+    lines.push({ key: `service-${x.service_id}`, label: `+ ${name(x)}`, value: money(x.price) ?? c.pricing.toQuote, tone: "neutral" });
+  }
   for (const x of s.addons ?? []) {
     lines.push({ key: `addon-${x.product_id}`, label: `+ ${name(x)}`, value: money(x.price) ?? "", tone: "neutral" });
   }
+  if (s.vip?.free_wash) {
+    lines.push({ key: "vip", label: c.pricing.vipFree, value: `−${money(s.vip.discount) ?? ""}`, tone: "discount" });
+  }
 
-  return { lines, total: money(s.amount) ?? c.book.priceToConfirm };
+  // Con una parte por cotizar no hay total definitivo: se muestra lo conocido como "desde", nunca 0.
+  const partial = s.amount === null && s.partial_amount ? money(s.partial_amount) : null;
+  return { lines, total: money(s.amount) ?? (partial ? c.pricing.partialTotal(partial) : c.book.priceToConfirm) };
 }
 
 /** Cumpleaños escrito como AAAA-MM-DD: fecha real, desde 1900 y no futura. Devuelve la misma cadena o null. */

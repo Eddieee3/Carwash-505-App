@@ -26,7 +26,7 @@ export function LoyaltySection() {
   const fail = (e: unknown) => Alert.alert(bookingErrorMessage(e, c));
   const name = (x: { name_es: string; name_en: string }) => (locale === "en" ? x.name_en : x.name_es);
 
-  if (wallet.isLoading) return <ActivityIndicator color={palette.cyan} />;
+  if (wallet.isLoading) return <ActivityIndicator color={palette.cyan} accessibilityLabel={c.common.loading} />;
   if (!w) return <EmptyState title={c.errors.generic} action={{ label: c.common.retry, onPress: () => wallet.refetch() }} />;
 
   return (

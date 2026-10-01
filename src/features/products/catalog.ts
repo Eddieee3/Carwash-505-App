@@ -193,3 +193,16 @@ export const PRODUCTS: Product[] = [
     image: require("@/assets/products/extintor.png"),
   },
 ];
+
+/** Normaliza para buscar sin tildes ni mayúsculas ("Meguiar's" = "meguiars"). */
+const norm = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\p{M}']/gu, "")
+    .toLowerCase();
+
+/** P02: búsqueda por nombre o marca, combinada con la categoría. */
+export function filterProducts(list: Product[], category: ProductCategory | "all", query: string): Product[] {
+  const q = norm(query.trim());
+  return list.filter((p) => (category === "all" || p.category === category) && (!q || norm(`${p.brand} ${p.name}`).includes(q)));
+}

@@ -7,6 +7,7 @@ import { useBooking, useCancelBooking, useDirections, useEstimate, useReplyAtten
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { SpinCard } from "@/features/commerce/SpinCard";
 import { STATUS_STYLE } from "@/features/booking/status";
+import { ServiceProgress } from "@/features/booking/BookingCard";
 import { useBookingMedia } from "@/features/evidence/api";
 import { PhotoGallery } from "@/features/evidence/PhotoGallery";
 import { vehicleLabel } from "@/features/garage/vehicle";
@@ -99,7 +100,7 @@ export default function BookingDetail() {
         {b.vehicle ? (
           <Row label={c.booking.vehicle} value={[vehicleLabel(b.vehicle, c), b.vehicle.plate].filter(Boolean).join(" · ")} />
         ) : null}
-        {snap.adjustments ? (
+        {snap.adjustments || snap.services ? (
           // Reservas desde la F5: desglose guardado al reservar (no se recalcula).
           <View style={{ gap: 2 }}>
             <Text variant="label" tone="muted">
@@ -113,13 +114,20 @@ export default function BookingDetail() {
         <Row label={c.booking.reference} value={b.reference_code} />
       </Card>
 
-      {b.status === "in_progress" ? (
+      {b.status !== "cancelled" && b.status !== "no_show" ? (
         <Card>
-          <StatusBadge
-            label={estimate.data ? c.arrival.estimate(formatTime(estimate.data, locale)) : c.arrival.inProgress}
-            tone="warning"
-            icon={Clock}
-          />
+          <Text variant="eyebrow" tone="accent" accessibilityRole="header">
+            {c.booking.progressTitle}
+          </Text>
+          <ServiceProgress status={b.status} />
+          {b.status === "in_progress" ? (
+            <StatusBadge
+              label={estimate.data ? c.arrival.estimate(formatTime(estimate.data, locale)) : c.arrival.inProgress}
+              tone="warning"
+              icon={Clock}
+            />
+          ) : null}
+          {b.status === "ready" ? <Text accessibilityLiveRegion="polite">{c.booking.readyPickUp}</Text> : null}
         </Card>
       ) : null}
 

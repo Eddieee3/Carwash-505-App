@@ -6,6 +6,25 @@
 
 ---
 
+## Ajustes de la revisión (Ajustes_Car_Wash_505.pdf, 2026-10-01)
+
+Hechos en código y probados (web: migraciones 25 y 26 + 424 pruebas; app: 93 pruebas). **Las migraciones 25 y 26 NO están aplicadas en Supabase todavía**: `npx supabase db push` desde la web, con autorización y respaldo previo. Desplegar también la Edge Function `owner-report` (libro XLSX).
+
+Reglas confirmadas por el negocio: VIP 9 pagados + 10.º gratis · 10 bahías por tipo · placa de Nicaragua (1–2 letras + 3–6 dígitos).
+
+Reglas aplicadas **provisionalmente** (confirmar o cambiar):
+- Adicionales: lavado de motor, motor en seco, limpieza de motor, chasis y chasis muy sucio. Compatibles con todo principal (`services.addon_for` vacío). Panel → Servicios.
+- VIP: si no hay servicios participantes elegidos, cuentan los lavados (categoría *maintenance*). Con el gratis pendiente, un lavado pagado no marca casilla.
+- Placa opcional; marca y modelo obligatorios; sin placas repetidas en una misma cuenta.
+- Cobros: efectivo, transferencia y tarjeta; pagos parciales permitidos; correcciones = anular con motivo (solo el dueño); no se cobra lo "por cotizar" hasta fijar precio final. Entregar no exige pago (queda "cobro pendiente").
+- Sin stock negativo. Consumo de insumos solo manual (no se descuenta por servicio).
+- Cancelación del personal exige motivo. Cierre por clima no avisa al cliente automáticamente (se muestran las reservas afectadas).
+- Tareas: crean y reasignan dueño y lobby; completa el responsable o el dueño.
+
+Pendiente de verificar en dispositivo real (no se puede aquí): Safari en iPhone (barra inferior), anchos 320–430 px, VoiceOver, cámara/fotos, abrir el XLSX en Excel, recorrido completo con cuentas de cada rol (pruebas 16, 17, 19 y 20 del PDF).
+
+---
+
 ## 0. Backend (Supabase)
 
 **Proyecto creado:** "CarWash 505" (`odlfjbazrmtiurawyifu`, us-east-2, Postgres 17), enlazado con `supabase link` en la carpeta de la web.

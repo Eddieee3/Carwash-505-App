@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/api/supabase";
-import type { BayClosureRow, OwnerDashboard } from "@/shared/database";
+import type { BayClosureRow, BayKind, OwnerDashboard } from "@/shared/database";
 import type { OpeningHours } from "@/shared/site";
 
 /** Dashboard en vivo del propietario: resumen del día, VIP presentes, riesgo de no-show, insumos y tareas. */
@@ -28,7 +28,7 @@ export function useOpeningHours() {
   });
 }
 
-/** Cierres vigentes o futuros. */
+/** Cierres vigentes o futuros (los reabiertos quedan en el historial y ya no cuentan). */
 export function useClosures() {
   return useQuery({
     queryKey: ["closures"],
@@ -37,6 +37,7 @@ export function useClosures() {
         .from("bay_closures")
         .select("*")
         .gt("ends_at", new Date().toISOString())
+        .is("reopened_at", null)
         .order("starts_at");
       if (error) throw error;
       return data as BayClosureRow[];
@@ -44,14 +45,23 @@ export function useClosures() {
   });
 }
 
-export function useCloseWash() {
+/**
+ * B05: cierre por clima o mantenimiento de un tipo de bahía (solo el dueño). No cancela ni borra reservas: el servidor
+ * devuelve cuántas quedan dentro del cierre para avisarles.
+ */
+export function useCloseBays() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (until: Date) => {
-      const { error } = await db()
-        .from("bay_closures")
-        .insert({ bay_kind: "wash", starts_at: new Date().toISOString(), ends_at: until.toISOString(), reason: "weather" });
+    mutationFn: async (v: { kind: BayKind; until: Date; reason: BayClosureRow["reason"]; note?: string }) => {
+      const { data, error } = await db().rpc("close_bays", {
+        p_kind: v.kind,
+        p_starts_at: new Date().toISOString(),
+        p_ends_at: v.until.toISOString(),
+        p_reason: v.reason,
+        p_note: v.note ?? null,
+      });
       if (error) throw error;
+      return data as { closure_id: string; affected_bookings: number };
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["closures"] });
@@ -60,11 +70,12 @@ export function useCloseWash() {
   });
 }
 
+/** Reabrir: queda registrado quién y cuándo (no se borra el cierre). */
 export function useReopen() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await db().from("bay_closures").delete().eq("id", id);
+      const { error } = await db().rpc("reopen_closure", { p_closure_id: id });
       if (error) throw error;
     },
     onSettled: () => {

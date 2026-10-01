@@ -4,7 +4,7 @@ import { Button, Card, ChoiceChips, space, StatusBadge, Text } from "@/design";
 import { STATUS_STYLE } from "@/features/booking/status";
 import { currentLocale, getCopy } from "@/i18n";
 import { formatTime } from "@/lib/time";
-import type { BayRow, MediaPhase } from "@/shared/database";
+import type { AssignableStaff, BayRow, MediaPhase } from "@/shared/database";
 import { nextActions, photoPhases, type BoardAction, type BoardRow } from "./model";
 
 type Props = {
@@ -15,6 +15,11 @@ type Props = {
   onAction: (row: BoardRow, action: BoardAction) => void;
   onMoveBay: (row: BoardRow, bayId: string) => void;
   onPhoto: (row: BoardRow, phase: MediaPhase) => void;
+  /** Recepción (dueño y lobby): asignar a otra persona y cobrar. */
+  frontDesk?: boolean;
+  staff?: AssignableStaff[];
+  onAssignTo?: (row: BoardRow, staffId: string) => void;
+  onPay?: (row: BoardRow) => void;
 };
 
 const ATTENDANCE_STYLE = {
@@ -23,9 +28,10 @@ const ATTENDANCE_STYLE = {
   no_reply: { tone: "danger", icon: UserX },
 } as const;
 
-const PRIMARY: BoardAction[] = ["checkIn", "start", "finish"];
+const PRIMARY: BoardAction[] = ["checkIn", "start", "toQuality", "markReady", "deliver"];
+const ACTIVE = ["confirmed", "checked_in", "in_progress", "quality_check", "ready"];
 
-export function BoardCard({ row, userId, bays, busy, onAction, onMoveBay, onPhoto }: Props) {
+export function BoardCard({ row, userId, bays, busy, onAction, onMoveBay, onPhoto, frontDesk = false, staff = [], onAssignTo, onPay }: Props) {
   const c = getCopy();
   const locale = currentLocale();
   const style = STATUS_STYLE[row.status];
@@ -74,6 +80,22 @@ export function BoardCard({ row, userId, bays, busy, onAction, onMoveBay, onPhot
               testID={`board-photo-${phase}-${row.reference_code}`}
             />
           ))}
+        </View>
+      ) : null}
+
+      {frontDesk && onAssignTo && ACTIVE.includes(row.status) && staff.length > 0 ? (
+        <ChoiceChips
+          label={c.staff.assignTo}
+          options={staff.map((p) => ({ value: p.id, label: p.name }))}
+          value={row.assigned_staff_id ?? ""}
+          onChange={(id) => id !== row.assigned_staff_id && onAssignTo(row, id)}
+          testIDPrefix={`board-assign-${row.reference_code}`}
+        />
+      ) : null}
+
+      {frontDesk && onPay && row.status !== "cancelled" && row.status !== "no_show" ? (
+        <View style={{ alignSelf: "flex-start" }}>
+          <Button variant="ghost" label={c.payments.open} onPress={() => onPay(row)} disabled={busy} testID={`board-pay-${row.reference_code}`} />
         </View>
       ) : null}
 

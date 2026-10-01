@@ -22,5 +22,6 @@ export function Screen({ children, edges = ["top", "bottom"] }: { children: Reac
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  content: { flexGrow: 1, padding: gutter, gap: space.xl },
+  // U01: margen inferior extra para que el último contenido nunca quede pegado o tapado por la barra de pestañas.
+  content: { flexGrow: 1, padding: gutter, paddingBottom: gutter + space.xxl, gap: space.xl },
 });

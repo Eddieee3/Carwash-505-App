@@ -7,7 +7,7 @@ import { Text } from "@/design/components/Text";
 import { useTheme } from "@/design/theme";
 import { glass, palette, radius, space, status, touch } from "@/design/tokens";
 import { getCopy } from "@/i18n";
-import { addDays, BUSINESS_TZ, formatTime } from "@/lib/time";
+import { addDays, BUSINESS_TZ, formatTime, sentenceCase } from "@/lib/time";
 import type { Locale } from "@/shared/site";
 import type { DayAvailability, Slot } from "./api";
 import { dayTone, monthOf, monthWeeks, shiftMonth, slotSummary, splitByPeriod, type DayTone } from "./calendar";
@@ -60,8 +60,8 @@ export function MonthCalendar({
     <Card accessibilityLabel={c.book.calendar}>
       <View style={styles.header}>
         <NavButton label={c.book.prevMonth} disabled={!canPrev} onPress={() => setMonth(shiftMonth(month, -1))} icon="prev" />
-        <Text variant="displaySm" style={styles.capitalize} accessibilityRole="header">
-          {monthLabel}
+        <Text variant="displaySm" accessibilityRole="header">
+          {sentenceCase(monthLabel)}
         </Text>
         <NavButton label={c.book.nextMonth} disabled={!canNext} onPress={() => setMonth(shiftMonth(month, 1))} icon="next" />
       </View>
@@ -92,7 +92,9 @@ export function MonthCalendar({
                     ? c.book.closedDay
                     : tone === "full"
                       ? c.book.legendFull
-                      : c.book.dayFree(info.free);
+                      : tone === "few"
+                        ? `${c.book.legendFew}, ${c.book.dayFree(info.free)}`
+                        : `${c.book.legendFree}, ${c.book.dayFree(info.free)}`;
               return (
                 <Pressable
                   key={cell.day}
@@ -179,8 +181,8 @@ export function TimePanel({
 
   return (
     <Card>
-      <Text variant="displaySm" style={styles.capitalize}>
-        {title}
+      <Text variant="displaySm">
+        {sentenceCase(title)}
       </Text>
       <Text variant="bodySm" tone="muted">
         {c.book.availability(free, slots.length)}

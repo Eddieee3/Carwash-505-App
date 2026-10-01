@@ -9,13 +9,25 @@ async function rpc<T>(fn: string, params: Record<string, unknown> = {}): Promise
 }
 
 /** Precio calculado por el servidor para esa cita (mismo cálculo que guardará book_slot). */
-export function useQuote(input: { serviceId: string | null; vehicleId: string | null; startsAt: string | null; addonIds: string[] }) {
-  const { serviceId, vehicleId, startsAt, addonIds } = input;
+export function useQuote(input: {
+  serviceId: string | null;
+  vehicleId: string | null;
+  startsAt: string | null;
+  addonIds: string[];
+  addonServiceIds?: string[];
+}) {
+  const { serviceId, vehicleId, startsAt, addonIds, addonServiceIds = [] } = input;
   return useQuery({
-    queryKey: ["quote", serviceId, vehicleId, startsAt, [...addonIds].sort().join(",")],
+    queryKey: ["quote", serviceId, vehicleId, startsAt, [...addonIds].sort().join(","), [...addonServiceIds].sort().join(",")],
     enabled: !!serviceId && !!vehicleId && !!startsAt,
     queryFn: () =>
-      rpc<Quote>("quote_price", { p_service_id: serviceId, p_vehicle_id: vehicleId, p_starts_at: startsAt, p_addon_ids: addonIds }),
+      rpc<Quote>("quote_price", {
+        p_service_id: serviceId,
+        p_vehicle_id: vehicleId,
+        p_starts_at: startsAt,
+        p_addon_ids: addonIds,
+        p_addon_service_ids: addonServiceIds,
+      }),
     staleTime: 30_000,
   });
 }

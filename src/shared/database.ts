@@ -75,6 +75,10 @@ export type ServiceRow = {
   duration_minutes_suv: number | null;
   duration_minutes_large: number | null;
   bookable: boolean;
+  /** Migración 25: 'main' = servicio principal; 'addon' = adicional (motor, chasis…). */
+  booking_role?: "main" | "addon";
+  /** Principales con los que se puede sumar el adicional (vacío = todos). */
+  addon_for?: string[];
   /** Horas de garantía por lluvia desde que el vehículo sale finalizado (Deluxe: 24). */
   rain_warranty_hours: number | null;
   created_at: string;
@@ -333,6 +337,8 @@ export type VehicleRow = {
   nickname: string | null;
   is_default: boolean;
   archived_at: string | null;
+  /** Migración 25: foto en el bucket privado vehicle-photos (<cliente>/<vehículo>/<archivo>). */
+  photo_path?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -356,9 +362,13 @@ export type BayClosureRow = {
   note: string | null;
   created_by: string | null;
   created_at: string;
+  /** Migración 26: reabrir no borra el cierre (queda el historial). */
+  reopened_at?: string | null;
+  reopened_by?: string | null;
 };
 
-export const BOOKING_STATUSES = ["confirmed", "checked_in", "in_progress", "completed", "cancelled", "no_show"] as const;
+/** Migración 26: Control de calidad y Lista entre En proceso y Entregada (completed). */
+export const BOOKING_STATUSES = ["confirmed", "checked_in", "in_progress", "quality_check", "ready", "completed", "cancelled", "no_show"] as const;
 export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
 /** Foto del precio al reservar: un cambio de tarifa posterior no altera reservas ya hechas. */
@@ -385,7 +395,17 @@ export type PriceSnapshot = {
   service_amount?: number | null;
   addons?: QuoteAddon[];
   addons_total?: number;
+  /** Migración 25: servicios adicionales (precio null = a cotizar), duración total y lavado gratis VIP. */
+  services?: QuoteService[];
+  services_total?: number;
+  duration_minutes?: number;
+  vip?: { free_wash: boolean; discount: number } | null;
+  /** Total antes del beneficio VIP (null si alguna parte requiere cotización). */
+  normal_amount?: number | null;
+  /** Suma de lo que sí tiene precio (para mostrar "desde" cuando el total queda a cotizar). */
+  partial_amount?: number;
 };
+export type QuoteService = { service_id: string; name_es: string; name_en: string; price: number | null; duration_minutes: number };
 
 /** Resultado de quote_price(): el mismo cálculo que guardará book_slot. */
 export type Quote = Required<PriceSnapshot>;
@@ -429,6 +449,8 @@ export type BookingMediaRow = {
   /** Ruta en el bucket privado `service-evidence`: bookings/<booking_id>/<fase>/<archivo>. */
   storage_path: string;
   taken_by: string | null;
+  /** Migración 26: nota (p. ej. descripción del daño). */
+  note?: string | null;
   created_at: string;
 };
 
@@ -470,8 +492,14 @@ export type VipCardState = {
   enabled: boolean;
   card_slots: number;
   card_number: number;
+  /** Lavados pagados marcados en la tarjeta actual (0 … card_slots - 1). La última casilla es el lavado gratis. */
   filled: number;
+  /** Migración 25: lavados pagados que se necesitan (card_slots - 1) y los que faltan. */
+  paid_required?: number;
+  remaining_paid?: number;
   next_is_free: boolean;
+  /** El lavado gratis ya está apartado en una reserva activa. */
+  free_wash_reserved?: boolean;
   free_washes_earned: number;
   total_stamps: number;
 };
@@ -581,6 +609,17 @@ export type TicketMediaRow = {
 };
 
 /** Extra ofrecido al reservar (booking_extras). `recommended` = ese vehículo ya lo llevó en un servicio completado. */
+/** Servicio adicional que se puede sumar a un principal (booking_addon_services, migración 25). */
+export type AddonService = {
+  id: string;
+  name_es: string;
+  name_en: string;
+  description_es: string | null;
+  description_en: string | null;
+  price: number | null;
+  currency: string;
+  duration_minutes: number;
+};
 export type BookingExtra = {
   id: string;
   name_es: string;
@@ -640,7 +679,13 @@ export type OwnerDashboard = {
     booked_minutes: number;
     capacity_minutes: number;
     occupancy_pct: number | null;
+    /** Desde la migración 26 = pagos válidos del día (igual que collected_revenue). */
     completed_revenue: { currency: string; amount: number }[];
+    collected_revenue?: { currency: string; amount: number }[];
+    expected_revenue?: { amounts: { currency: string; amount: number }[]; pending_quotes: number };
+    /** Entregadas hoy con cobro pendiente. */
+    pending_payment?: number;
+    by_kind?: { kind: BayKind; bays: number; booked_minutes: number; capacity_minutes: number; occupancy_pct: number | null }[];
     active_closures: number;
   };
   vip_present: { booking_id: string; customer_name: string | null; status: BookingStatus; slot_start: string }[];
@@ -664,9 +709,25 @@ export type MaintenanceTask = {
   recurrence: "daily" | "weekly" | "monthly" | null;
   status: "open" | "done";
   done_at: string | null;
+  assignee_id?: string | null;
   assignee_name: string | null;
   mine: boolean | null;
+  booking_id?: string | null;
+  booking_reference?: string | null;
 };
 
+/** Migración 26: cobros por reserva. */
+export type PaymentMethod = "cash" | "transfer" | "card";
+export type PaymentStatus = "pending_quote" | "unpaid" | "partial" | "paid";
+export type PaymentSummary = {
+  amount_due: number | null;
+  paid: number;
+  currency: string;
+  status: PaymentStatus;
+  payments?: { id: string; amount: number; method: PaymentMethod; status: "valid" | "void"; created_at: string; void_reason: string | null }[];
+};
+export type AssignableStaff = { id: string; name: string; role: "operator" | "lobby" | "super_admin" };
+export type TicketEvent = { id: number; ticket_id: string; from_status: TicketStatus | null; to_status: TicketStatus; resolution: string | null; created_at: string };
+
 /** Respuesta de la Edge Function owner-report: enlaces firmados de corta duración. */
-export type ReportLinks = { pdf_url: string; csv_url: string; expires_in: number };
+export type ReportLinks = { pdf_url: string; csv_url: string; xlsx_url?: string; expires_in: number };
