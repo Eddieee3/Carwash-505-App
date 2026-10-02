@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { AlertTriangle, CalendarClock, CarFront, ChevronDown, ChevronUp, CloudRain, Crown, Info, ShieldAlert, UserX, Wrench } from "lucide-react-native";
 import { useState, type ReactNode } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, ChoiceChips, EmptyState, Eyebrow, Field, palette, Screen, space, StatusBadge, Text, touch, useTheme } from "@/design";
 import { useBays, useBookingsRealtime, useStaffBoard } from "@/features/board/api";
 import { todayOverview } from "@/features/board/model";

@@ -1,6 +1,7 @@
 import { ChevronRight, ShieldCheck, UserRound, Wrench } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, ChoiceChips, EmptyState, Eyebrow, Field, palette, Screen, space, status, StatusBadge, Text, touch, useTheme } from "@/design";
 import { Sheet } from "@/features/board/sheets";
 import { TasksSection } from "@/features/operations/OperationsScreen";

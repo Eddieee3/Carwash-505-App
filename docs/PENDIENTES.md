@@ -8,7 +8,9 @@
 
 ## Ajustes de la revisión (Ajustes_Car_Wash_505.pdf, 2026-10-01)
 
-Hechos en código y probados (web: migraciones 25 y 26 + 424 pruebas; app: 93 pruebas). **Las migraciones 25 y 26 NO están aplicadas en Supabase todavía**: `npx supabase db push` desde la web, con autorización y respaldo previo. Desplegar también la Edge Function `owner-report` (libro XLSX).
+Hechos en código y probados (web: migraciones 25 y 26 + 424 pruebas; app: 95 pruebas). **Migraciones 25 y 26 aplicadas en Supabase y `owner-report` desplegada el 2026-10-01** (respaldo JSON previo de las tablas afectadas en `../respaldos/2026-10-01-antes-migraciones-25-26/`, fuera del repositorio porque contiene datos de clientes).
+
+Auditoría de la demo (Auditoria_Demo_Car_Wash_505.pdf): H01–H03 causados por las migraciones sin aplicar y por `Alert.alert`, que en web no hace nada (ahora `@/lib/alert` usa window.confirm/alert); H04–H06 por la superficie de vidrio al 5 % en los diálogos (ahora `bgSheet` opaco); H07 por un `onError` que en web ocultaba fotos existentes; H08 barra del admin sin área segura. Pendiente probar en iPhone real.
 
 Reglas confirmadas por el negocio: VIP 9 pagados + 10.º gratis · 10 bahías por tipo · placa de Nicaragua (1–2 letras + 3–6 dígitos).
 

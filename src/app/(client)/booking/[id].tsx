@@ -1,7 +1,8 @@
 import * as Linking from "expo-linking";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Clock } from "lucide-react-native";
-import { ActivityIndicator, Alert, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, ChoiceChips, EmptyState, Eyebrow, palette, Screen, space, StatusBadge, Text } from "@/design";
 import { useBooking, useCancelBooking, useDirections, useEstimate, useReplyAttendance, useSetEta } from "@/features/booking/api";
 import { bookingErrorMessage } from "@/features/booking/errors";

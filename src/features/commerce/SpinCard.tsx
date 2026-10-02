@@ -1,5 +1,5 @@
 import { Sparkles } from "lucide-react-native";
-import { Alert } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, StatusBadge, Text } from "@/design";
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { currentLocale, getCopy } from "@/i18n";

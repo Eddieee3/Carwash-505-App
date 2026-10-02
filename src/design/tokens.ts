@@ -36,6 +36,8 @@ export const dark = {
   bg: palette.ink,
   // Vidrio: las superficies dejan ver el fondo ambiental (ver Glass y Backdrop).
   bgRaised: "rgba(255,255,255,0.05)",
+  // Diálogos y hojas: superficie OPACA (el vidrio dejaba leer la pantalla de atrás a través del panel).
+  bgSheet: "#0e1720",
   fg: palette.ice,
   fgMuted: palette.steel,
   line: "rgba(255,255,255,0.10)",
@@ -51,6 +53,7 @@ export const dark = {
 export const light = {
   bg: palette.ice,
   bgRaised: "#ffffff",
+  bgSheet: "#ffffff",
   fg: "#0b1118",
   fgMuted: "#46525f",
   line: "rgba(11,17,24,0.16)",

@@ -1,6 +1,7 @@
 import { Award, Crown, Gift } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Alert, Share, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Share, StyleSheet, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, EmptyState, Field, palette, space, StatusBadge, Text } from "@/design";
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { CommerceSection } from "@/features/commerce/CommerceSection";

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Alert, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, Field, space, Text, useTheme } from "@/design";
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { currentLocale, getCopy } from "@/i18n";

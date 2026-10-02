@@ -1,7 +1,8 @@
 import { Check, Crown, Gift, Maximize2, X } from "lucide-react-native";
 import * as Linking from "expo-linking";
 import { useState, type ReactNode } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Modal, Platform, Pressable, StyleSheet, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import QRCode from "react-native-qrcode-svg";
 // Import directo (no el índice @/design): el índice carga las fuentes y así el componente se prueba con Jest.
 import { Button } from "@/design/components/Button";
@@ -102,7 +103,7 @@ function AppQr() {
       </View>
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <View style={styles.backdrop}>
-          <View style={[styles.qrSheet, { backgroundColor: theme.bgRaised, borderColor: theme.line }]} accessibilityViewIsModal>
+          <View style={[styles.qrSheet, { backgroundColor: theme.bgSheet, borderColor: theme.lineStrong }]} accessibilityViewIsModal>
             <View style={styles.sheetHeader}>
               <Text variant="displaySm" accessibilityRole="header" style={{ flex: 1 }}>
                 {c.vipCard.qrTitle}
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.md,
     alignSelf: "flex-start",
   },
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", padding: space.lg },
+  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.78)", justifyContent: "center", padding: space.lg },
   qrSheet: { alignSelf: "center", alignItems: "center", borderRadius: radius.panel, borderWidth: 1, padding: space.lg, gap: space.md },
   sheetHeader: { flexDirection: "row", alignItems: "center", gap: space.md, alignSelf: "stretch" },
   close: { minWidth: touch.min, minHeight: touch.min, alignItems: "center", justifyContent: "center" },

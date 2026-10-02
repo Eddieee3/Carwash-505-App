@@ -16,7 +16,7 @@ export function Sheet({ visible, title, onClose, children }: { visible: boolean;
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.backdrop}>
-        <View style={[styles.sheet, { backgroundColor: theme.bgRaised, borderColor: theme.line }]} accessibilityViewIsModal>
+        <View style={[styles.sheet, { backgroundColor: theme.bgSheet, borderColor: theme.lineStrong }]} accessibilityViewIsModal>
           <View style={styles.header}>
             <Text variant="displaySm" accessibilityRole="header" style={{ flex: 1 }}>
               {title}
@@ -218,7 +218,7 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", padding: space.lg },
+  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.78)", justifyContent: "center", padding: space.lg },
   sheet: {
     maxHeight: "90%",
     width: "100%",

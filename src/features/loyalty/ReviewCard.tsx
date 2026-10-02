@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, ChoiceChips, Field, Text } from "@/design";
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { getCopy } from "@/i18n";

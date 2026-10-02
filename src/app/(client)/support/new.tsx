@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, ChoiceChips, Field, Screen, space, Text } from "@/design";
 import { useBookingHistory, useMyBookings } from "@/features/booking/api";
 import { bookingErrorMessage } from "@/features/booking/errors";

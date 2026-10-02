@@ -3,7 +3,8 @@ import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
 import { CalendarX, CarFront, Check, Clock, CloudRain, Info, X } from "lucide-react-native";
 import { useRef, useState, type ReactNode } from "react";
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, ChoiceChips, EmptyState, palette, radius, Screen, space, StatusBadge, Text, touch, useTheme } from "@/design";
 import {
   useAddonServices,
@@ -549,7 +550,7 @@ function ServiceDetails({ service, kind, onClose }: { service: BookableService |
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <View style={[styles.sheet, { backgroundColor: theme.bgRaised, borderColor: theme.line }]} accessibilityViewIsModal>
+        <View style={[styles.sheet, { backgroundColor: theme.bgSheet, borderColor: theme.lineStrong }]} accessibilityViewIsModal>
           <View style={styles.sheetHeader}>
             <Text variant="displaySm" accessibilityRole="header" style={{ flex: 1 }}>
               {en ? service.name_en : service.name_es}
@@ -628,7 +629,7 @@ const styles = StyleSheet.create({
   whenWide: { flexDirection: "row", alignItems: "flex-start" },
   calendarCol: { flex: 1, maxWidth: 520 },
   timeCol: { flex: 1 },
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", padding: space.lg },
+  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.78)", justifyContent: "center", padding: space.lg },
   sheet: {
     maxHeight: "90%",
     width: "100%",

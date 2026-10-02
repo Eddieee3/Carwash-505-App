@@ -1,5 +1,6 @@
 import Tabs from "expo-router/js-tabs";
 import { ClipboardList, Ellipsis, LayoutDashboard, Package, Users } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { dark, fonts, palette } from "@/design";
 import { getCopy } from "@/i18n";
 
@@ -9,15 +10,19 @@ import { getCopy } from "@/i18n";
  */
 export default function OwnerLayout() {
   const c = getCopy();
+  // H08 (auditoría): la barra reserva el área segura inferior (Safari / indicador de inicio) para no cortar etiquetas.
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, 8);
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: palette.ink },
-        tabBarStyle: { backgroundColor: palette.graphite, borderTopColor: dark.line },
+        tabBarStyle: { backgroundColor: palette.graphite, borderTopColor: dark.line, height: 60 + bottom, paddingTop: 6, paddingBottom: bottom },
         tabBarActiveTintColor: palette.cyan,
         tabBarInactiveTintColor: palette.steel,
-        tabBarLabelStyle: { fontFamily: fonts.display.medium, letterSpacing: 1, textTransform: "uppercase", paddingTop: 2 },
+        tabBarItemStyle: { minHeight: 44 },
+        tabBarLabelStyle: { fontFamily: fonts.display.medium, fontSize: 10, lineHeight: 14, letterSpacing: 0.5, textTransform: "uppercase", paddingTop: 2 },
       }}
     >
       <Tabs.Screen

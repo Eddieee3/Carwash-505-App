@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { ClipboardList, Radio } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Alert, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, ChoiceChips, EmptyState, Eyebrow, palette, Screen, space, StatusBadge, Text } from "@/design";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { bookingErrorMessage } from "@/features/booking/errors";

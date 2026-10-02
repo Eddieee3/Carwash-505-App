@@ -1,7 +1,8 @@
 import { Stack } from "expo-router";
 import { LifeBuoy } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Alert, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Alert } from "@/lib/alert";
 import { Button, Card, ChoiceChips, EmptyState, Eyebrow, Field, palette, Screen, space, StatusBadge, Text } from "@/design";
 import { bookingErrorMessage } from "@/features/booking/errors";
 import { PhotoGallery } from "@/features/evidence/PhotoGallery";

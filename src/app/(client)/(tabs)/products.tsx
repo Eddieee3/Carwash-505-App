@@ -105,7 +105,9 @@ export default function Products() {
 function ProductPhoto({ product, height }: { product: Product; height: number }) {
   const c = getCopy();
   const theme = useTheme();
-  const [failed, setFailed] = useState(false);
+  // H07 (auditoría): el sustituto solo aparece si el producto no tiene foto. Antes se activaba con onError, que en web
+  // se disparaba aunque la imagen existiera (el archivo sí se sirve: 200 image/png) y ocultaba todas las fotos.
+  const failed = !product.image;
   const color = HALO[product.category];
   return (
     <View style={[styles.stage, { height }]}>
@@ -131,8 +133,6 @@ function ProductPhoto({ product, height }: { product: Product; height: number })
           source={product.image}
           style={styles.image}
           contentFit="contain"
-          contentPosition="center"
-          onError={() => setFailed(true)}
           accessibilityLabel={c.products.photoAlt(`${product.brand} ${product.name}`)}
         />
       )}
